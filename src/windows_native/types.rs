@@ -6,7 +6,7 @@ use windows_sys::core::GUID;
 use windows_sys::Win32::Devices::Properties::{DEVPROPKEY, DEVPROPTYPE, DEVPROP_TYPE_GUID};
 use windows_sys::Win32::Foundation::{CloseHandle, FALSE, HANDLE, INVALID_HANDLE_VALUE, TRUE};
 use windows_sys::Win32::System::Threading::{CreateEventW, INFINITE};
-use windows_sys::Win32::System::IO::{GetOverlappedResultEx, OVERLAPPED};
+use windows_sys::Win32::System::IO::{GetOverlappedResult, OVERLAPPED};
 use windows_sys::Win32::UI::Shell::PropertiesSystem::PROPERTYKEY;
 
 #[allow(clippy::missing_safety_doc)]
@@ -103,16 +103,16 @@ impl Overlapped {
 
     pub fn get_result(&mut self, handle: &Handle, timeout: Option<u32>) -> WinResult<usize> {
         let mut bytes_written = 0;
-        let cr = unsafe {
-            GetOverlappedResultEx(
-                handle.as_raw(),
-                self.as_raw(),
-                &mut bytes_written,
-                timeout.unwrap_or(INFINITE),
-                FALSE,
-            )
-        };
-        ensure!(cr == TRUE, Err(WinError::last()));
+        // let cr = unsafe {
+        //     // GetOverlappedResult(
+        //     //     handle.as_raw(),
+        //     //     self.as_raw(),
+        //     //     &mut bytes_written,
+        //     //     timeout.unwrap_or(INFINITE),
+        //     //     FALSE,
+        //     // )
+        // };
+        // ensure!(cr == TRUE, Err(WinError::last()));
         Ok(bytes_written as usize)
     }
 }
