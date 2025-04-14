@@ -4,8 +4,10 @@ use std::mem::{size_of, zeroed};
 use std::ptr::null;
 use windows_sys::core::GUID;
 use windows_sys::Win32::Devices::Properties::{DEVPROPKEY, DEVPROPTYPE, DEVPROP_TYPE_GUID};
-use windows_sys::Win32::Foundation::{CloseHandle, FALSE, HANDLE, INVALID_HANDLE_VALUE, TRUE};
-use windows_sys::Win32::System::Threading::{CreateEventW, INFINITE};
+use windows_sys::Win32::Foundation::{
+    CloseHandle, FALSE, HANDLE, INVALID_HANDLE_VALUE, TRUE, WAIT_OBJECT_0,
+};
+use windows_sys::Win32::System::Threading::{CreateEventW, WaitForSingleObject, INFINITE};
 use windows_sys::Win32::System::IO::{GetOverlappedResult, OVERLAPPED};
 use windows_sys::Win32::UI::Shell::PropertiesSystem::PROPERTYKEY;
 
@@ -103,16 +105,33 @@ impl Overlapped {
 
     pub fn get_result(&mut self, handle: &Handle, timeout: Option<u32>) -> WinResult<usize> {
         let mut bytes_written = 0;
-        // let cr = unsafe {
-        //     // GetOverlappedResult(
-        //     //     handle.as_raw(),
-        //     //     self.as_raw(),
-        //     //     &mut bytes_written,
-        //     //     timeout.unwrap_or(INFINITE),
-        //     //     FALSE,
-        //     // )
-        // };
-        // ensure!(cr == TRUE, Err(WinError::last()));
+        let overlapped = self.as_raw();
+
+        // 通过事件对象实现超时等待（网页1/网页6）
+        let wait_result = unsafe {
+            WaitForSingleObject(
+                (*overlapped).hEvent, // 使用OVERLAPPED结构中的事件
+                timeout.unwrap_or(INFINITE),
+            )
+        };
+
+        // 处理等待结果（网页2/网页5）
+        ensure!(
+            wait_result == WAIT_OBJECT_0,
+            Err(WinError::from_win32(unsafe { GetLastError() }))
+        );
+
+        // 获取I/O操作结果（网页3/网页7）
+        let cr = unsafe {
+            GetOverlappedResult(
+                handle.as_raw(),
+                overlapped,
+                &mut bytes_written,
+                FALSE, // 非阻塞模式，因已通过事件等待完成
+            )
+        };
+
+        ensure!(cr == TRUE, Err(WinError::last()));
         Ok(bytes_written as usize)
     }
 }
