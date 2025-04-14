@@ -118,7 +118,7 @@ impl Overlapped {
         // 处理等待结果（网页2/网页5）
         ensure!(
             wait_result == WAIT_OBJECT_0,
-            Err(WinError::from_win32(unsafe { GetLastError() }))
+            Err(WinError::from(unsafe { GetLastError() }))
         );
 
         // 获取I/O操作结果（网页3/网页7）
