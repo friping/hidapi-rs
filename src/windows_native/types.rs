@@ -1,4 +1,4 @@
-use crate::windows_native::error::{Win32Error, WinError, WinResult};
+use crate::windows_native::error::{WinError, WinResult};
 use crate::BusType;
 use std::mem::{size_of, zeroed};
 use std::ptr::null;
@@ -115,13 +115,13 @@ impl Overlapped {
             )
         };
 
-        // 处理等待结果（网页2/网页5）
+        // 处理等待结果
         ensure!(
             wait_result == WAIT_OBJECT_0,
-            Err(Win32Error::from(unsafe { GetLastError() }))
+            Err(WinError::from(unsafe { GetLastError() }))
         );
 
-        // 获取I/O操作结果（网页3/网页7）
+        // 获取I/O操作结果
         let cr = unsafe {
             GetOverlappedResult(
                 handle.as_raw(),

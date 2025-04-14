@@ -100,3 +100,21 @@ impl From<Win32Error> for HidError {
         HidError::from(WinError::from(value))
     }
 }
+
+// 补充以下两个转换实现
+impl From<WIN32_ERROR> for Win32Error {
+    fn from(code: WIN32_ERROR) -> Self {
+        match code {
+            NO_ERROR => Self::Success,
+            ERROR_IO_PENDING => Self::IoPending,
+            WAIT_TIMEOUT | ERROR_IO_INCOMPLETE => Self::WaitTimedOut,
+            _ => Self::Generic(code),
+        }
+    }
+}
+
+impl From<WIN32_ERROR> for WinError {
+    fn from(code: WIN32_ERROR) -> Self {
+        Win32Error::from(code).into() // 通过中间类型转换
+    }
+}
