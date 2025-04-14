@@ -5,7 +5,7 @@ use std::ptr::null;
 use windows_sys::core::GUID;
 use windows_sys::Win32::Devices::Properties::{DEVPROPKEY, DEVPROPTYPE, DEVPROP_TYPE_GUID};
 use windows_sys::Win32::Foundation::{
-    CloseHandle, FALSE, HANDLE, INVALID_HANDLE_VALUE, TRUE, WAIT_OBJECT_0,
+    CloseHandle, GetLastError, FALSE, HANDLE, INVALID_HANDLE_VALUE, TRUE, WAIT_OBJECT_0,
 };
 use windows_sys::Win32::System::Threading::{CreateEventW, WaitForSingleObject, INFINITE};
 use windows_sys::Win32::System::IO::{GetOverlappedResult, OVERLAPPED};
